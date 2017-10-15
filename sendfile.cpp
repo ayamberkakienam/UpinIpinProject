@@ -12,6 +12,19 @@
 #define PORT 8080
 #endif
 
+int LFS = -1;
+int LAR = -1;
+
+struct frame
+{
+	char SOH = 0x01;
+	int seqnum;
+	char STX = 0x02;
+	char data;
+	char ETX = 0x03;
+	char checksum;
+};
+
 int main(int argc, char const *argv[])
 {
 	int client_fd;
@@ -45,50 +58,23 @@ int main(int argc, char const *argv[])
 		printf("argument ok\n");
 	}
 
-	// FILE * file;
-	// char * filename = argv[1];
-	// char ch;
-	// char * msg;
-
-	// file = fopen(filename, "r");
-
-	// while (ch = fgetc(file) != EOF) {
-	// 	printf("%c", ch);
-	// 	msg = (char *)&ch;
-	// 	send(client_fd, msg, strlen(msg), 0);
-	// }
-	// fclose(file);
-	
+// file stream
 	std::ifstream file;
 	std::vector<char> ch;
 	char c;
 	file.open("test.txt");
 	if (!file)
 	{
-		std::cout << "error open file";
+		perror("failed to open file");
+		exit(EXIT_FAILURE);
 	}
 
 	while (!file.eof()) {
 		file >> c;
 		ch.push_back(c);
 	}
+	file.close();
 
-// print vector
-	// for (std::vector<char>::iterator it = ch.begin(); it < ch.end(); it++)
-	// {
-	// 	std::cout << *it;
-	// }
-
-	// std::ifstream file;
-	// char * str;
-	// file.open("test.txt");
-	// file >> * str;
-	// printf("%s\n", str);
-	// std::cout << * str << std::endl;
-
-	// printf("%s\n", str);
-
-	// send(client_fd, "wancol", strlen("wancol"), 0);
 	std::cout << "sent?" << std::endl;
 
 	return 0;
