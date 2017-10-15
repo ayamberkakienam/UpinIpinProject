@@ -30,14 +30,15 @@ int main(int argc, char const *argv[])
 	int client_fd;
 	struct sockaddr_in serv_addr;
 
+// create socket
 	if ((client_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{
 		perror("socket failed");
 		exit(EXIT_FAILURE);
 	}
 
+// set address to sock
 	memset(&serv_addr, '\0', sizeof(serv_addr));
-
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(PORT);
 
@@ -47,21 +48,15 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+// establish connection
 	if (connect(client_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 	{
 		perror("connection failed");
 		exit(EXIT_FAILURE);
 	}
 
-	if (argc == 2)
-	{
-		printf("argument ok\n");
-	}
-
-// file stream
+// create file stream
 	std::ifstream file;
-	std::vector<char> ch;
-	char c;
 	file.open("test.txt");
 	if (!file)
 	{
@@ -69,13 +64,23 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+// push data to vector
+	std::vector<char> datavec;
+	char c;
 	while (!file.eof()) {
 		file >> c;
-		ch.push_back(c);
+		datavec.push_back(c);
 	}
 	file.close();
 
-	std::cout << "sent?" << std::endl;
+// print vector content for error checking
+	// for (std::vector<char>::iterator it = datavec.begin(); it != datavec.end(); it++)
+	// {
+	// 	std::cout << *it;
+	// }
+
+	// std::cout << std::endl;
+	// std::cout << "sent?" << std::endl;
 
 	return 0;
 }
