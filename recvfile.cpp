@@ -16,7 +16,7 @@ int main(int argc, char const *argv[])
 	char buffer[1024] = {0};
 	struct sockaddr_in address;
 
-	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+	if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0)
 	{
 		perror("socket failed");
 		exit(EXIT_FAILURE);
@@ -33,7 +33,7 @@ int main(int argc, char const *argv[])
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(PORT);
 
-	if (listen(server_fd, 1) < 0)
+	if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
 	{
 		perror("listen failed");
 		exit(EXIT_FAILURE);
