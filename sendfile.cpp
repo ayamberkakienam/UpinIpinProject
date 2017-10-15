@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -38,7 +40,55 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	send(client_fd, "wancol", strlen("wancol"), 0);
+	if (argc == 2)
+	{
+		printf("argument ok\n");
+	}
+
+	// FILE * file;
+	// char * filename = argv[1];
+	// char ch;
+	// char * msg;
+
+	// file = fopen(filename, "r");
+
+	// while (ch = fgetc(file) != EOF) {
+	// 	printf("%c", ch);
+	// 	msg = (char *)&ch;
+	// 	send(client_fd, msg, strlen(msg), 0);
+	// }
+	// fclose(file);
+	
+	std::ifstream file;
+	std::vector<char> ch;
+	char c;
+	file.open("test.txt");
+	if (!file)
+	{
+		std::cout << "error open file";
+	}
+
+	while (!file.eof()) {
+		file >> c;
+		ch.push_back(c);
+	}
+
+// print vector
+	// for (std::vector<char>::iterator it = ch.begin(); it < ch.end(); it++)
+	// {
+	// 	std::cout << *it;
+	// }
+
+	// std::ifstream file;
+	// char * str;
+	// file.open("test.txt");
+	// file >> * str;
+	// printf("%s\n", str);
+	// std::cout << * str << std::endl;
+
+	// printf("%s\n", str);
+
+	// send(client_fd, "wancol", strlen("wancol"), 0);
 	std::cout << "sent?" << std::endl;
 
 	return 0;
