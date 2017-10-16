@@ -8,22 +8,14 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "frame.h"
+
 #ifndef PORT
 #define PORT 8080
 #endif
 
 int LFS = -1;
 int LAR = -1;
-
-struct frame
-{
-	char SOH = 0x01;
-	int seqnum;
-	char STX = 0x02;
-	char data;
-	char ETX = 0x03;
-	char checksum;
-};
 
 int main(int argc, char const *argv[])
 {
@@ -67,6 +59,7 @@ int main(int argc, char const *argv[])
 // push data to vector
 	std::vector<char> datavec;
 	char c;
+	file >> c;
 	while (!file.eof()) {
 		file >> c;
 		datavec.push_back(c);
@@ -78,9 +71,31 @@ int main(int argc, char const *argv[])
 	// {
 	// 	std::cout << *it;
 	// }
-
 	// std::cout << std::endl;
-	// std::cout << "sent?" << std::endl;
 
+// prototype to send struct
+	std::cout << c << std::endl;
+	frame f1;
+	f1.seqnum = 1;
+	f1.data = c;
+	f1.checksum = 0x45;
+	char * buffer = (char *) &f1;
+
+	printf("%s\n", buffer);
+
+	frame *f2 = (frame *) buffer;
+	printf("%c\n", f2->ETX);
+
+	// frame f2 = (struct frame) buffer;	
+
+	send(client_fd, buffer, 9, 0);
+	
+	// for (int i = 0; i < 7; ++i)
+	// {
+	// 	std::cout << dest[i];
+	// }
+
+	std::cout << "sent?" << std::endl;
+	
 	return 0;
 }
