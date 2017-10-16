@@ -15,7 +15,7 @@ int main(int argc, char const *argv[])
 {
 	int opt = 1;
 	int server_fd;
-	char buffer[1024] = {0};
+	char * buffer = new char [9];
 	struct sockaddr_in address;
 
 	if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0)
@@ -41,8 +41,15 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	recv(server_fd, buffer, 1024, 0);
-	std::cout << "Message : " << buffer << std::endl;
+	recv(server_fd, buffer, 9, 0);
+
+	frame *f1 = (frame *) buffer;
+	printf("%c\n", f1->SOH);
+	printf("%d\n", f1->seqnum);
+	printf("%c\n", f1->STX);
+	printf("%c\n", f1->data);
+	printf("%c\n", f1->ETX);
+	// std::cout << "Message : " << f1->data << std::endl;
 
 	return 0;
 }

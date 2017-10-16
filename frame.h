@@ -4,11 +4,11 @@
 #define PORT 8080
 
 struct frame {
-	char SOH = 0x01;
+	char SOH = 'x';
 	int seqnum;
-	char STX = 0x02;
+	char STX = 'y';
 	char data;
-	char ETX = 0x03;
+	char ETX = 'z';
 	char checksum;
 };
 
