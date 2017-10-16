@@ -72,6 +72,7 @@ int main(int argc, char const *argv[])
 	// 	std::cout << *it;
 	// }
 	// std::cout << std::endl;
+	
 	std::cout << "Data : " << c << std::endl;
 
 	frame * f1 = new frame;
@@ -80,16 +81,17 @@ int main(int argc, char const *argv[])
 	f1->STX = 'y';
 	f1->data = c;
 	f1->ETX = 'z';
-	f1->checksum = 0x45;
+	f1->checksum = 'u';
 
 // prototype to send struct
 	// char * buffer = (char *) &f1;
 	// frame *f2 = (frame *) buffer;
 
 // prototype 2 to send struct (serialization)
-	char data[sizeof (frame)];
-	serialize(f1, data);	
-	deserialize(data, f1);
+	// char data[sizeof (frame)];
+	// serialize(f1, data);	
+	// deserialize(data, f1);
+	
 // print content of frame
 	printf("%c\n", f1->SOH);
 	printf("%d\n", f1->seqnum);
@@ -97,7 +99,7 @@ int main(int argc, char const *argv[])
 	printf("%c\n", f1->data);
 	printf("%c\n", f1->ETX);
 
-	send(client_fd, &f1, sizeof(f1), 0);
+	send(client_fd, f1, sizeof(f1), 0);
 
 	std::cout << "sent?" << std::endl;
 	

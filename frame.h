@@ -3,7 +3,7 @@
 
 #define PORT 8080
 
-struct frame {
+typedef struct __attribute__((packed)) frame {
 	char SOH = 'x';
 	int seqnum;
 	char STX = 'y';
