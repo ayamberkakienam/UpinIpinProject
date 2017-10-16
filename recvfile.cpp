@@ -15,7 +15,6 @@ int main(int argc, char const *argv[])
 {
 	int opt = 1;
 	int server_fd;
-	char data[sizeof (frame)];
 	struct sockaddr_in address;
 
 // create socket
@@ -44,16 +43,11 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-
 	frame * f1;
-	recv(server_fd, f1, sizeof(data), 0);
-
-	printf("%c\n", f1->SOH);
-	printf("%d\n", f1->seqnum);
-	printf("%c\n", f1->STX);
-	printf("%c\n", f1->data);
-	printf("%c\n", f1->ETX);
-	// std::cout << "Message : " << f1->data << std::endl;
+	recv(server_fd, f1, sizeof(frame), 0);
+	printf("Recv frame :\n");
+	printFrame(f1);
+	printf("%d\n", sizeof(f1));
 
 	return 0;
 }

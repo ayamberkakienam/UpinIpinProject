@@ -40,4 +40,13 @@ void deserialize(char * data, frame * f) {
 	f->checksum = *c1;	c1++;
 }
 
+void printFrame(frame * f1) {
+	printf("%c\n", f1->SOH);
+	printf("%d\n", f1->seqnum);
+	printf("%c\n", f1->STX);
+	printf("%c\n", f1->data);
+	printf("%c\n", f1->ETX);
+	printf("%c\n", f1->checksum);
+}
+
 #endif

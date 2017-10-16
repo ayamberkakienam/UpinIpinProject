@@ -66,13 +66,6 @@ int main(int argc, char const *argv[])
 	}
 	file.close();
 
-// print vector content for error checking
-	// for (std::vector<char>::iterator it = datavec.begin(); it != datavec.end(); it++)
-	// {
-	// 	std::cout << *it;
-	// }
-	// std::cout << std::endl;
-	
 	std::cout << "Data : " << c << std::endl;
 
 	frame * f1 = new frame;
@@ -82,26 +75,10 @@ int main(int argc, char const *argv[])
 	f1->data = c;
 	f1->ETX = 'z';
 	f1->checksum = 'u';
-
-// prototype to send struct
-	// char * buffer = (char *) &f1;
-	// frame *f2 = (frame *) buffer;
-
-// prototype 2 to send struct (serialization)
-	// char data[sizeof (frame)];
-	// serialize(f1, data);	
-	// deserialize(data, f1);
 	
-// print content of frame
-	printf("%c\n", f1->SOH);
-	printf("%d\n", f1->seqnum);
-	printf("%c\n", f1->STX);
-	printf("%c\n", f1->data);
-	printf("%c\n", f1->ETX);
-
-	send(client_fd, f1, sizeof(f1), 0);
-
-	std::cout << "sent?" << std::endl;
+	send(client_fd, f1, sizeof(frame), 0);
+	printf("Sent frame :\n");
+	printFrame(f1);
 	
 	return 0;
 }
