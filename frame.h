@@ -4,11 +4,11 @@
 #define PORT 8080
 
 typedef struct __attribute__((packed)) frame {
-	char SOH = 0x01;
+	char SOH;
 	int seqnum;
-	char STX = 0x02;
+	char STX;
 	char data;
-	char ETX = 0x03;
+	char ETX;
 	char checksum;
 };
 
@@ -26,6 +26,58 @@ void printFrame(frame * f1) {
 	printf("%c\n", f1->data);
 	printf("%c\n", f1->ETX);
 	printf("%c\n", f1->checksum);
+};
+
+char getChecksum(frame * f) {
+	int i = 0;
+	int sum = 0;
+	char * c = (char *) f;
+
+	while (i < sizeof(*f)-1) {
+		sum = sum + (int) c[i];
+		i++;
+	}
+
+	return (char) sum;
+}
+
+char getChecksum(ack * f) {
+	int i = 0;
+	int sum = 0;
+	char * c = (char *) f;
+
+	while (i < sizeof(*f)-1) {
+		sum = sum + (int) c[i];
+		i++;
+	}
+
+	return (char) sum;
+}
+
+bool validateChecksum(frame * f) {
+	int i = 0;
+	int sum = 0;
+	char * c = (char *) f;
+
+	while (i < sizeof(*f)-1) {
+		sum = sum + (int) c[i];
+		i++;
+	}
+
+	return (char) sum == c[i];
+}
+
+bool validateChecksum(ack * f) {
+	int i = 0;
+	int sum = 0;
+	char * c = (char *) f;
+
+	while (i < sizeof(*f)-1) {
+		sum = sum + (int) c[i];
+		i++;
+	}
+
+	return (char) sum == c[i];
 }
 
 #endif
