@@ -4,45 +4,20 @@
 #define PORT 8080
 
 typedef struct __attribute__((packed)) frame {
-	char SOH = 'x';
+	char SOH = 0x01;
 	int seqnum;
-	char STX = 'y';
+	char STX = 0x02;
 	char data;
-	char ETX = 'z';
+	char ETX = 0x03;
 	char checksum;
 };
 
 typedef struct __attribute__((packed)) ack {
-	
+	char ACK = 0x06;
+	int nextseqnum;
+	char advwinsize;
+	char checksum;
 };
-
-void serialize(frame * f,  char * data) {
-	char *c0 = (char *) data;
-	*c0 = f->SOH;		c0++;
-
-	int *i = (int *) c0;
-	*i = f->seqnum;		i++;
-
-	char *c1 = (char *) i;
-	*c1 = f->STX;		c1++;
-	*c1 = f->data;		c1++;
-	*c1 = f->ETX;		c1++;
-	*c1 = f->checksum;	c1++;
-}
-
-void deserialize(char * data, frame * f) {
-	char *c0 = (char *) data;
-	f->SOH = *c0;		c0++;
-
-	int *i = (int *) c0;
-	f->seqnum = *i;		i++;
-
-	char *c1 = (char *) i;
-	f->STX = *c1;		c1++;
-	f->data = *c1;		c1++;
-	f->ETX = *c1;		c1++;
-	f->checksum = *c1;	c1++;
-}
 
 void printFrame(frame * f1) {
 	printf("%c\n", f1->SOH);
