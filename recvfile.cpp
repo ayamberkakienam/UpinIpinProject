@@ -19,7 +19,7 @@ int main(int argc, char const *argv[])
 	struct sockaddr_in address;
 
 // create socket
-	if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0)
+	if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{
 		perror("socket failed");
 		exit(EXIT_FAILURE);
@@ -40,7 +40,7 @@ int main(int argc, char const *argv[])
 // bind socket
 	if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
 	{
-		perror("listen failed");
+		perror("bind failed");
 		exit(EXIT_FAILURE);
 	}
 
