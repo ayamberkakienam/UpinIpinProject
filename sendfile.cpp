@@ -89,6 +89,7 @@ int main(int argc, char * argv[])
 	unsigned idxvec = 0;
 	char c;
 
+
 	frame * f1 = new frame;
 	std::vector<char> datavec;
 
