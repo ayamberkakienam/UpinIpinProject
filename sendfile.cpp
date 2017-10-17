@@ -14,10 +14,6 @@
 #define PORT 8080
 #endif
 
-#ifndef SERVICE_PORT
-#define SERVICE_PORT 1234
-#endif
-
 int LFS = -1;
 int LAR = -1;
 
@@ -99,10 +95,11 @@ int main(int argc, char const *argv[])
 	int i = 0;
 	for (std::vector<char>::iterator it = datavec.begin(); it != datavec.end(); it++)
 	{
-		std::cout << "Data : " << *it << std::endl;
+		std::cout << "Data dikirim : " << *it << std::endl;
 		f1->seqnum = i;
 		f1->data = *it;
 		f1->checksum = 'u';
+		i++;
 		if (sendto(client_fd, f1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen) == -1)
 		{
 			perror("sendto");
