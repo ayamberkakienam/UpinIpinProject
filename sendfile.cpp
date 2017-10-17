@@ -69,7 +69,7 @@ int main(int argc, char const *argv[])
 	file >> c;
 	while (!file.eof()) {
 		datavec.push_back(c);
-		file >> c;
+		file >> std::noskipws >> c;
 	}
 	file.close();
 
