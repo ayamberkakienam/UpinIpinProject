@@ -40,9 +40,8 @@ int main(int argc, char const *argv[])
 
 // receive message and send respond
 	frame * f1 = new frame;
-	frame * f2 = new frame;
-	f2->data = 's';
-	f2->checksum = '0';
+	ack * f2 = new ack;
+	f2->advwinsize;
 
 	int i = 1;
 
@@ -57,9 +56,10 @@ int main(int argc, char const *argv[])
 			std::cout << "Something's wrong" << std::endl;
 		}
 
-		f2->seqnum = i;
+		f2->nextseqnum = i;
+		f2->checksum = getChecksum(f2);
 		i++;
-		if (sendto(server_fd, f2, sizeof(frame), 0, (struct sockaddr *)&remote_addr, remaddrlen) < 0)
+		if (sendto(server_fd, f2, sizeof(ack), 0, (struct sockaddr *)&remote_addr, remaddrlen) < 0)
 		{
 			perror("send");
 		}

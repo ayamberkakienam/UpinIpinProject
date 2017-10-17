@@ -56,6 +56,7 @@ int main(int argc, char const *argv[])
 			{
 				//std::cout << "Data diterima :" << f1->data << std::endl;
 				buffer.push_back(f1->data);
+				std::cout << f1->data << std::endl;
 			} else
 			{
 				std::cout << "Something's wrong" << std::endl;
@@ -70,6 +71,7 @@ int main(int argc, char const *argv[])
 
 			recvlen = recvfrom(server_fd, f1, sizeof(frame), 0, (struct sockaddr *)&remote_addr, &remaddrlen);
 			j++;
+			i++;
 		}
 
 		std::cout << j << std::endl;

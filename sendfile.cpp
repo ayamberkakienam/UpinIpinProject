@@ -91,6 +91,7 @@ int main(int argc, char * argv[])
 
 
 	frame * f1 = new frame;
+	ack * ack1 = new ack;
 	std::vector<char> datavec;
 
 	while (!file.eof()) {
@@ -112,16 +113,50 @@ int main(int argc, char * argv[])
 		}
 
 		// nunggu timeout
-		int twait = 10;
-		while (twait > 10) {
-			sleep(10);
+		printf("LFS : %d\n", LFS);
+		printf("LAR : %d\n", LAR);
+		int twait = 4;
+		while (twait > 0) {
+			sleep(1);
+			if (recvfrom(client_fd, ack1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, &remaddrlen) >= 0)
+			{
+				printf("get stuff!\n");
+				
+				int ackseq = ack1->nextseqnum - 1;
+				printf("get ACK : %d\n", ackseq + 1);
+				if (ackseq <= LFS && ackseq > LAR)
+				{
+					datavec[ackseq] = NIL;
+					if (ackseq == LAR+1)
+					{
+						LAR++;
+						printf("LAR is changed to : %d\n", LAR);
+					}
+				}
+
+				// if (ack1->ACK == 0x06)
+				// {
+				// 	int ackseq = ack1->nextseqnum - 1;
+				// 	printf("get ACK : %d\n", ackseq + 1);
+				// 	if (ackseq <= LFS && ackseq > LAR)
+				// 	{
+				// 		datavec[ackseq] = NIL;
+				// 		if (ackseq == LAR+1)
+				// 		{
+				// 			LAR++;
+				// 		}
+				// 	}
+				// }
+			}
+			twait--;
+			printf("cout %d\n", twait);
 		}
 
 		// ngirim ulang
 		bool isResend = false;
 		int i;
 		while ((i = LAR+1 <= LFS) || isResend == true) {
-			if (datavec[i] == NIL)
+			if (datavec[i] != NIL)
 			{
 				isResend = true;
 			}
