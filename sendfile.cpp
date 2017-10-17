@@ -32,16 +32,10 @@ int main(int argc, char const *argv[])
 	}
 
 // set address to sock
-	// memset(&send_addr, '\0', sizeof(send_addr));
 	memset((char *)&send_addr, 0, sizeof(send_addr));
 	send_addr.sin_family = AF_INET;
 	send_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	send_addr.sin_port = htons(0);
-	// if (inet_pton(AF_INET, "127.0.0.1", &send_addr.sin_addr) <= 0)
-	// {
-	// 	perror("invalid address");
-	// 	exit(EXIT_FAILURE);
-	// }
 
 // bind socket
 	if (bind(client_fd, (struct sockaddr *)&send_addr, sizeof(send_addr)) < 0)
@@ -60,14 +54,6 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-
-// establish connection
-	// if (connect(client_fd, (struct sockaddr *)&send_addr, sizeof(send_addr)) < 0)
-	// {
-	// 	perror("connection failed");
-	// 	exit(EXIT_FAILURE);
-	// }
-
 // create file stream
 	std::ifstream file;
 	file.open("test.txt");
@@ -82,14 +68,12 @@ int main(int argc, char const *argv[])
 	char c;
 	file >> c;
 	while (!file.eof()) {
-		file >> c;
 		datavec.push_back(c);
+		file >> c;
 	}
 	file.close();
 
-// print vector content for error checking
-	
-
+// send message and receive respond
 	frame * f1 = new frame;
 	frame * f2 = new frame;
 	int i = 0;
@@ -111,17 +95,6 @@ int main(int argc, char const *argv[])
 			std::cout << "recv message : " << f2->seqnum << std::endl;
 		}
 	}
-
-// prototype to send struct
-	// char * buffer = (char *) &f1;
-	// frame *f2 = (frame *) buffer;
-
-// prototype 2 to send struct (serialization)
-	// char data[sizeof (frame)];
-	// serialize(f1, data);	
-	// deserialize(data, f1);
-
-	// send(client_fd, f1, sizeof(f1), 0);
 
 	std::cout << "sent?" << std::endl;
 	

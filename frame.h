@@ -12,6 +12,10 @@ typedef struct __attribute__((packed)) frame {
 	char checksum;
 };
 
+typedef struct __attribute__((packed)) ack {
+	
+};
+
 void serialize(frame * f,  char * data) {
 	char *c0 = (char *) data;
 	*c0 = f->SOH;		c0++;

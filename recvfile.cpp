@@ -17,8 +17,6 @@ int main(int argc, char const *argv[])
 	socklen_t remaddrlen = sizeof(remote_addr);
 	int server_fd, new_socket;
 	int recvlen;
-	// int opt = 1;
-	// int addrlen = sizeof (recv_addr);
 
 // create socket
 	if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0)
@@ -28,11 +26,6 @@ int main(int argc, char const *argv[])
 	}
 
 // set recv_addr to sock
-	// if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
-	// {
-	// 	perror("setsockopt failed");
-	// 	exit(EXIT_FAILURE);
-	// }
 	memset((char *)&recv_addr, 0, sizeof(recv_addr));
 	recv_addr.sin_family = AF_INET;
 	recv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -45,18 +38,7 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	// if (listen(server_fd, 3) < 0)
- //    {
- //        perror("listen");
- //        exit(EXIT_FAILURE);
- //    }
-
- //    if ((new_socket = accept(server_fd, (struct sockaddr *)&recv_addr, (socklen_t*)&addrlen))<0)
- //    {
- //        perror("accept");
- //        exit(EXIT_FAILURE);
- //    }
-
+// receive message and send respond
 	frame * f1 = new frame;
 	frame * f2 = new frame;
 	f2->data = 's';
@@ -82,20 +64,6 @@ int main(int argc, char const *argv[])
 			perror("send");
 		}
 	}
-
-	// recv(server_fd, f1, sizeof(frame), 0);
-	// printf("Recv frame :\n");
-	// printFrame(f1);
-
-	// f1->SOH = 'x';
-	// f1->seqnum = 2;
-	// f1->STX = 'y';
-	// f1->data = 'a';
-	// f1->ETX = 'z';
-	// f1->checksum = 'u';
-
-	// send(server_fd, "c", sizeof("c"), 0);
-	// printf("Sent mess\n");
 
 	return 0;
 }
