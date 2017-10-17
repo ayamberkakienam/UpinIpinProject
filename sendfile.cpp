@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 #include "frame.h"
 
@@ -110,6 +111,10 @@ int main(int argc, char * argv[])
 		}
 
 		// nunggu timeout
+		int twait = 10;
+		while (twait > 10) {
+			sleep(10);
+		}
 
 		// ngirim ulang
 		bool isResend = false;
