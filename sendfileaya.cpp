@@ -31,13 +31,13 @@ int main(int argc, char * argv[])
 	// 	exit(EXIT_FAILURE);
 	// }
 
-	// char * filename		= argv[1];
-	// int winsize			= atoi(argv[2]);
-	int winsize			= 4;
-	// int bufsize			= atoi(argv[3]);
-	int bufsize			= 256;
-	// char * dest_ip		= argv[4];
-	// int dest_port		= atoi(argv[5]);
+	char * filename		= argv[1];
+	int winsize			= atoi(argv[2]);
+	// int winsize			= 4;
+	int bufsize			= atoi(argv[3]);
+	// int bufsize			= 256;
+	char * dest_ip		= argv[4];
+	int dest_port		= atoi(argv[5]);
 
 	struct sockaddr_in send_addr, remote_addr;
 	int client_fd;
@@ -76,7 +76,7 @@ int main(int argc, char * argv[])
 
 // create file stream
 	std::ifstream file;
-	file.open("test.txt");
+	file.open(filename);
 	if (!file)
 	{
 		perror("failed to open file");
@@ -89,19 +89,12 @@ int main(int argc, char * argv[])
 	unsigned idxvec = 0;
 	char c;
 
-
 	frame * f1 = new frame;
 	ack * ack1 = new ack;
 	std::vector<char> datavec;
 
 	while (!file.eof()) {
-		
-		// masukin file ke buffer
-		// for (int i = 0; i < bufsize; ++i) {
-		// 	file >> std::noskipws >> c;
-		// 	datavec.push_back(c);
-		// }
-		
+
 		int j = 0;
 		do{
 			file >> std::noskipws >> c;
@@ -111,20 +104,20 @@ int main(int argc, char * argv[])
 		} while (j < bufsize && !file.eof());
 		datavec.pop_back();
 
-		bool lastbuf = false;
 		int lastidx;
 		if (file.eof())
 		{
 			printf("eof\n");
-			lastbuf = true;
 			lastidx = datavec.size()-1;
 			printf("%d\n", lastidx);
 		}
 
-		while ((LFS < bufsize) && (lastbuf && LFS < lastidx)) {
+		while ((LFS < bufsize) && (LFS < lastidx)) {
 			// ngirim paket hingga sebanyak window size
+			int twait;
 			if (lastidx - LFS >= winsize)
 			{
+				twait = winsize;
 				while (LFS - LAR < winsize) {
 					LFS++;
 					f1->seqnum = LFS;
@@ -134,6 +127,7 @@ int main(int argc, char * argv[])
 					printf("Send frame : %d; data : %c\n", f1->seqnum, f1->data);
 				}
 			} else {
+				twait = lastidx - LFS;
 				while (LFS < lastidx) {
 					LFS++;
 					f1->seqnum = LFS;
@@ -149,7 +143,6 @@ int main(int argc, char * argv[])
 			}
 
 			// nunggu timeout
-			int twait;
 			while (twait > 0) {
 				sleep(1);
 				if (recvfrom(client_fd, ack1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, &remaddrlen) >= 0) {
@@ -164,20 +157,6 @@ int main(int argc, char * argv[])
 							LAR++;
 						}
 					}
-
-					// if (ack1->ACK == 0x06)
-					// {
-					// 	int ackseq = ack1->nextseqnum - 1;
-					// 	printf("get ACK : %d\n", ackseq + 1);
-					// 	if (ackseq <= LFS && ackseq > LAR)
-					// 	{
-					// 		datavec[ackseq] = NIL;
-					// 		if (ackseq == LAR+1)
-					// 		{
-					// 			LAR++;
-					// 		}
-					// 	}
-					// }
 				}
 				twait--;
 			}
@@ -204,37 +183,6 @@ int main(int argc, char * argv[])
 		}
 	}
 	file.close();
-
-// send message and receive respond
-	// frame * f2 = new frame;
-	// int i = 0;
-
-	// for (std::vector<char>::iterator it = datavec.begin(); it != datavec.end(); it++)
-	// {
-	// 	std::cout << "Data dikirim : " << *it << std::endl;
-	// 	f1->seqnum = i;
-	// 	f1->data = *it;
-	// 	f1->checksum = 'u';
-	// 	i++;
-	// 	if (sendto(client_fd, f1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen) == -1)
-	// 	{
-	// 		perror("sendto");
-	// 		exit(EXIT_FAILURE);
-	// 	}
-	// 	recvlen =recvfrom(client_fd, f2, sizeof(frame), 0, (struct sockaddr *) &remote_addr, &remaddrlen);
-	// 	if (recvlen >= 0)
-	// 	{
-	// 		std::cout << "recv message : " << f2->seqnum << std::endl;
-	// 	}
-	// }
-
-	// f1->SOH = 0x01;
-	// f1->seqnum = 1;
-	// f1->STX = 0x02;
-	// f1->data = 'a';
-	// f1->ETX = 0x03;
-
-	// std::cout << getChecksumFrame(f1) << std::endl;
 
 	std::cout << "sent?" << std::endl;
 	

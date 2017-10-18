@@ -19,7 +19,7 @@ int main(int argc, char const *argv[])
 	socklen_t remaddrlen = sizeof(remote_addr);
 	int server_fd, new_socket;
 	int recvlen;
-	int buffersize = 20;
+	int buffersize = 4;
 	std::vector<char> buffer;
 
 // create socket
@@ -47,64 +47,72 @@ int main(int argc, char const *argv[])
 	ack  * f2 = new ack;
 	std::ofstream filerecv;
 
-	  std::ofstream myfile;
-  myfile.open ("example.txt", std::fstream::app);
-  myfile << "auiusa this to a file.\n";
-  myfile.close();
+	std::ofstream myfile;
+  	myfile.open ("example.txt", std::fstream::app);
+  	myfile << "auiusa this to a file.\n";
+  	myfile.close();
 
-	int i = 1;
 	int loopcount = 0;
+	int idx = 0;
+	bool endoftransmission = false;
 	recvlen = recvfrom(server_fd, f1, sizeof(frame), 0, (struct sockaddr *)&remote_addr, &remaddrlen);
 	int seqnow = f1->seqnum;
 	filerecv.open("testrecv.txt", std::fstream::app);	
-	if (seqnow != -1)
-	{
-		while (seqnow != -1) {
-			int j = 0; 
-			do {
-				if (recvlen > 0)
-				{
-					//std::cout << "Data diterima :" << f1->data << std::endl;
-					buffer.push_back(f1->data);
-					std::cout << "Data : " << f1->data << "; seqnum : " << f1->seqnum << std::endl;
-				} else
-				{
-					std::cout << "Something's wrong" << std::endl;
-				}
-
-				f2->nextseqnum = seqnow+1;
-			
-				if (sendto(server_fd, f2, sizeof(ack), 0, (struct sockaddr *)&remote_addr, remaddrlen) < 0)
-				{
-					perror("send");
-				}
-
-				recvlen = recvfrom(server_fd, f1, sizeof(frame), 0, (struct sockaddr *)&remote_addr, &remaddrlen);
-				j++;
-				i++;
-
-				seqnow = f1->seqnum;
-			} while (j < buffersize && seqnow != -1);
-
-			std::cout << j << std::endl;
-			int k = 0; 
-			int idx;
-			while (k < 5) {
-				idx = buffersize * loopcount + k;
-				std::cout << "Data diterima :" << buffer[idx] << std::endl;
-				filerecv << buffer[idx];
-				k++;	
+	
+	while (seqnow != -1) {
+		int j = 0; 
+		do {
+			if (recvlen > 0) {
+				//std::cout << "Data diterima :" << f1->data << std::endl;
+				buffer.push_back(f1->data);
+				std::cout << "Data : " << f1->data << "; seqnum : " << f1->seqnum << std::endl;
+			} else {
+				std::cout << "Something's wrong" << std::endl;
 			}
-			loopcount++;
-			filerecv.close();	
+
+			f2->nextseqnum = seqnow+1;
+		
+			if (sendto(server_fd, f2, sizeof(ack), 0, (struct sockaddr *)&remote_addr, remaddrlen) < 0) {
+				perror("send");
+			}
+
+			recvlen = recvfrom(server_fd, f1, sizeof(frame), 0, (struct sockaddr *)&remote_addr, &remaddrlen);
+			j++;
+			seqnow = f1->seqnum;
+		} while (j < buffersize && seqnow != -1);
+
+		std::cout << "J : " << j << std::endl;
+		std::cout << "Loopcount : " << loopcount << std::endl;	
+		std::cout << "Seqnow : "<< seqnow << std::endl;
+		int k = 0; 
+		
+		while (k < buffersize && seqnow != -1) {
+			idx = buffersize * loopcount + k;
+			std::cout << "Data diterima :" << buffer[idx] << std::endl;
+			filerecv << buffer[idx];
+			k++;	
 		}
-	} else
-	{
-		f2->nextseqnum = seqnow;
-		if (sendto(server_fd, f2, sizeof(ack), 0, (struct sockaddr *)&remote_addr, remaddrlen) < 0)
-				{
-					perror("send");
-				}
+
+		loopcount++;
+		
 	}
+	buffer.push_back(f1->data);
+
+	if (idx != 0) {
+		idx++;
+		filerecv << buffer[idx];
+	}
+
+	if (seqnow == -1) {
+		std::cout << "Finish" << std::endl;
+		f2->nextseqnum = seqnow;
+		if (sendto(server_fd, f2, sizeof(ack), 0, (struct sockaddr *)&remote_addr, remaddrlen) < 0) {
+			perror("send");
+		}
+		std::cout << "Data diterima : " << buffer.back() << std::endl;
+		filerecv << buffer.back();
+	}
+
+	filerecv.close();
 	return 0;
 }
