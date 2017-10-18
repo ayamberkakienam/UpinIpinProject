@@ -35,7 +35,7 @@ int main(int argc, char * argv[])
 	// int winsize			= atoi(argv[2]);
 	int winsize			= 4;
 	// int bufsize			= atoi(argv[3]);
-	unsigned bufsize			= 256;
+	int bufsize			= 256;
 	// char * dest_ip		= argv[4];
 	// int dest_port		= atoi(argv[5]);
 
@@ -97,73 +97,92 @@ int main(int argc, char * argv[])
 	while (!file.eof()) {
 		
 		// masukin file ke buffer
-		for (int i = 0; i < bufsize; ++i)
-		{
+		// for (int i = 0; i < bufsize; ++i) {
+		// 	file >> std::noskipws >> c;
+		// 	datavec.push_back(c);
+		// }
+		
+		int j = 0;
+		while (j < bufsize && !file.eof()) {
 			file >> std::noskipws >> c;
 			datavec.push_back(c);
+			j++;
 		}
 
-		// ngirim paket hingga sebanyak window size
-		while (LFS - LAR < winsize) {
-			LFS++;
-			f1->seqnum = LFS;
-			f1->data = datavec[LFS];
-			f1->checksum = getChecksum(f1);
-			sendto(client_fd, f1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
+		bool lastbuf = false;
+		int lastidx;
+		if (file.eof())
+		{
+			printf("eof\n");
+			lastbuf = true;
+			lastidx = datavec.size()-1;
+			printf("%d\n", lastidx);
 		}
 
-		// nunggu timeout
-		printf("LFS : %d\n", LFS);
-		printf("LAR : %d\n", LAR);
-		int twait = 4;
-		while (twait > 0) {
-			sleep(1);
-			if (recvfrom(client_fd, ack1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, &remaddrlen) >= 0)
-			{
-				printf("get stuff!\n");
-				
-				int ackseq = ack1->nextseqnum - 1;
-				printf("get ACK : %d\n", ackseq + 1);
-				if (ackseq <= LFS && ackseq > LAR)
+		while (LFS < bufsize && (lastbuf && LFS < lastidx)) {
+			// ngirim paket hingga sebanyak window size
+			while (LFS - LAR < winsize) {
+				LFS++;
+				f1->seqnum = LFS;
+				f1->data = datavec[LFS];
+				f1->checksum = getChecksum(f1);
+				if (LFS == lastidx)
 				{
-					datavec[ackseq] = NIL;
-					if (ackseq == LAR+1)
-					{
-						LAR++;
-						printf("LAR is changed to : %d\n", LAR);
-					}
+					f1->seqnum = -1;
 				}
-
-				// if (ack1->ACK == 0x06)
-				// {
-				// 	int ackseq = ack1->nextseqnum - 1;
-				// 	printf("get ACK : %d\n", ackseq + 1);
-				// 	if (ackseq <= LFS && ackseq > LAR)
-				// 	{
-				// 		datavec[ackseq] = NIL;
-				// 		if (ackseq == LAR+1)
-				// 		{
-				// 			LAR++;
-				// 		}
-				// 	}
-				// }
+				sendto(client_fd, f1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
 			}
-			twait--;
-			printf("cout %d\n", twait);
-		}
 
-		// ngirim ulang
-		bool isResend = false;
-		int i;
-		while ((i = LAR+1 <= LFS) || isResend == true) {
-			if (datavec[i] != NIL)
-			{
-				isResend = true;
+			// nunggu timeout
+			printf("LFS : %d\n", LFS);
+			printf("LAR : %d\n", LAR);
+			int twait = 4;
+			while (twait > 0) {
+				sleep(1);
+				if (recvfrom(client_fd, ack1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, &remaddrlen) >= 0) {
+					printf("get stuff!\n");
+					
+					int ackseq = ack1->nextseqnum - 1;
+					printf("get ACK : %d\n", ackseq + 1);
+					if (ackseq <= LFS && ackseq > LAR)
+					{
+						datavec[ackseq] = NIL;
+						if (ackseq == LAR+1)
+						{
+							LAR++;
+							printf("LAR is changed to : %d\n", LAR);
+						}
+					}
+
+					// if (ack1->ACK == 0x06)
+					// {
+					// 	int ackseq = ack1->nextseqnum - 1;
+					// 	printf("get ACK : %d\n", ackseq + 1);
+					// 	if (ackseq <= LFS && ackseq > LAR)
+					// 	{
+					// 		datavec[ackseq] = NIL;
+					// 		if (ackseq == LAR+1)
+					// 		{
+					// 			LAR++;
+					// 		}
+					// 	}
+					// }
+				}
+				twait--;
+				printf("cout %d\n", twait);
 			}
-			i++;
-		}
-		if (isResend)
-			{
+
+			// ngirim ulang
+			bool isResend = false;
+			int i;
+			while ((i = LAR+1 <= LFS) || isResend == true) {
+				if (datavec[i] != NIL)
+				{
+					isResend = true;
+				}
+				i++;
+			}
+			if (isResend) {
 				for (int i = LAR+1; i <= LFS; ++i)
 				{
 					f1->seqnum = i;
@@ -172,6 +191,7 @@ int main(int argc, char * argv[])
 					sendto(client_fd, f1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
 				}
 			}	
+		}
 	}
 	file.close();
 
