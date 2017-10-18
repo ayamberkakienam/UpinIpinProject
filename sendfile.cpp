@@ -103,11 +103,13 @@ int main(int argc, char * argv[])
 		// }
 		
 		int j = 0;
-		while (j < bufsize && !file.eof()) {
+		do{
 			file >> std::noskipws >> c;
 			datavec.push_back(c);
+			printf("datavec : %c\n", datavec.back());
 			j++;
-		}
+		} while (j < bufsize && !file.eof());
+		datavec.pop_back();
 
 		bool lastbuf = false;
 		int lastidx;
@@ -131,16 +133,14 @@ int main(int argc, char * argv[])
 					f1->seqnum = -1;
 				}
 				sendto(client_fd, f1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
+				printf("Send frame : %d; data : %c\n", f1->seqnum, f1->data);
 			}
 
 			// nunggu timeout
-			printf("LFS : %d\n", LFS);
-			printf("LAR : %d\n", LAR);
 			int twait = 4;
 			while (twait > 0) {
 				sleep(1);
 				if (recvfrom(client_fd, ack1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, &remaddrlen) >= 0) {
-					printf("get stuff!\n");
 					
 					int ackseq = ack1->nextseqnum - 1;
 					printf("get ACK : %d\n", ackseq + 1);
@@ -150,7 +150,6 @@ int main(int argc, char * argv[])
 						if (ackseq == LAR+1)
 						{
 							LAR++;
-							printf("LAR is changed to : %d\n", LAR);
 						}
 					}
 
@@ -169,7 +168,6 @@ int main(int argc, char * argv[])
 					// }
 				}
 				twait--;
-				printf("cout %d\n", twait);
 			}
 
 			// ngirim ulang
