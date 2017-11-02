@@ -18,6 +18,7 @@
 void setConnection(char * dest_ip, int dest_port);
 int loadFileToBuffer(std::ifstream& file, std::vector<char> &buffer, int bufsize);
 void printBuffer(std::vector<char> buffer);
+int sendWholeWindow(frame * framet, std::vector<char> &buffer);
 
 struct sockaddr_in send_addr;
 struct sockaddr_in remote_addr;
@@ -33,7 +34,7 @@ int dest_port;
 
 frame * framet;
 ack * ackt;
-int LFS = -1;
+int LAR = -1;
 
 int main(int argc, char * argv[])
 {
@@ -66,7 +67,6 @@ int main(int argc, char * argv[])
 
 	// push data to vector	
 	framet = new frame;
-	framet->data = 'c';
 	ackt = new ack;
 
 	std::vector<char> buffer;
@@ -74,7 +74,9 @@ int main(int argc, char * argv[])
 
 	while (!ends) {
 		ends = loadFileToBuffer(file, buffer, bufsize);
-		sendto(client_fd, "c", sizeof(char), 0, (struct sockaddr *) &remote_addr, remaddrlen);
+
+		sendWholeWindow(framet, buffer);
+		LAR += 4;
 	}
 
 	printBuffer(buffer);
@@ -120,7 +122,7 @@ void setConnection(char * dest_ip, int dest_port) {
 	printf("Socket connection success\n");
 }
 
-// Return 1 if buffer fully loaded; 0 if not
+// Return 0 if buffer fully loaded; 1 if not
 int loadFileToBuffer(std::ifstream& file, std::vector<char> &buffer, int bufsize) {
 	int retval = 0;
 
@@ -145,105 +147,21 @@ void printBuffer(std::vector<char> buffer) {
 	}
 }
 
-// void sendFrame(std::vector<char> &buffer) {
-// 	sendto(client_fd, f1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
-// }
-// nope
-	/*
-		int j = 0;
-		do{
-			file >> std::noskipws >> c;
-			datavec.push_back(c);
-			printf("datavec : %c\n", datavec.back());
-			j++;
-		} while (j < bufsize && !file.eof());
-		datavec.pop_back();
-
-		int lastidx;
-		if (file.eof())
+// Return 0 if window is full; 1 if not
+// Ngirim seluruh isi window dari (LAR+1) sampe (LAR+1)+window size
+int sendWholeWindow(frame * framet, std::vector<char> &buffer) {
+	int retval = 0;
+	for (int i = LAR+1; i < LAR+1 + winsize; ++i)
+	{
+		if (i < buffer.size())
 		{
-			printf("eof\n");
-			lastidx = datavec.size()-1;
-			printf("%d\n", lastidx);
+			framet->data = buffer[i];
+			printf("Sent frame data : %c\n", framet->data);
+			sendto(client_fd, framet, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
+		} else {
+			retval = 1;
 		}
+	}
 
-		while ((LFS < bufsize) && (LFS < lastidx) && !ends) {
-			// ngirim paket hingga sebanyak window size
-			int twait;
-			if (lastidx - LFS >= winsize)
-			{
-				twait = winsize;
-				while (LFS - LAR < winsize) {
-					LFS++;
-					frame->seqnum = LFS;
-					frame->data = datavec[LFS];
-					frame->checksum = getChecksum(frame);
-					sendto(client_fd, frame, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
-					printf("Send frame : %d; data : %c\n", frame->seqnum, frame->data);
-				}
-			} else {
-				twait = lastidx - LFS;
-				while (LFS < lastidx) {
-					LFS++;
-					frame->seqnum = LFS;
-					frame->data = datavec[LFS];
-					frame->checksum = getChecksum(frame);
-					if (LFS == lastidx)
-					{
-						frame->seqnum = -1;
-					}
-					sendto(client_fd, frame, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
-					printf("Send frame(1) : %d; data : %c\n", frame->seqnum, frame->data);
-				}
-			}
-
-			// nunggu timeout
-			while (twait > 0 && !ends) {
-				sleep(1);
-				if (recvfrom(client_fd, ackt, sizeof(frame), 0, (struct sockaddr *) &remote_addr, &remaddrlen) >= 0) {
-					
-					int ackseq = ackt->nextseqnum - 1;
-					printf("get ACK : %d\n", ackseq + 1);
-					if (ackseq <= LFS && ackseq > LAR)
-					{
-						datavec[ackseq] = NIL;
-						if (ackseq == LAR+1)
-						{
-							LAR++;
-						}
-					}
-					if (ackseq == -2)
-					{
-						printf("true yo\n");
-						ends = true;
-					}
-				}
-				twait--;
-			}
-
-
-			// ngirim ulang
-			bool isResend = false;
-			int i;
-			while (((i = LAR+1 <= LFS) || isResend == true) && !ends) {
-				if (datavec[i] != NIL)
-				{
-					isResend = true;
-				}
-				i++;
-			}
-			if (isResend) {
-				for (int i = LAR+1; i <= LFS; ++i)
-				{
-					frame->seqnum = i;
-					frame->data = datavec[i];
-					frame->checksum = getChecksum(frame);
-					sendto(client_fd, frame, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
-				}
-			}	
-			if (ends)
-			{
-				printf("it ends\n");
-			}
-		}
-	*/
+	return retval;
+}
