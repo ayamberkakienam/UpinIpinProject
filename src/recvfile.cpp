@@ -48,16 +48,14 @@ int main(int argc, char *argv[])
 	dest_port		= atoi(argv[4]);
 
 	setConnection(dest_port);
-	
+
 	buffer = new char[bufsize];
+	char * c;
 
-	// receive message and send respond
-	std::ofstream filerecv;
-	filerecv.open(filename, std::fstream::app);	
+	recvlen = recvfrom(server_fd, c, sizeof(char), 0, (struct sockaddr *)&remote_addr, &remaddrlen);
+	printf("%c\n", c);
 
-	recvlen = recvfrom(server_fd, f1, sizeof(frame), 0, (struct sockaddr *)&remote_addr, &remaddrlen);
-
-	filerecv.close();
+	// filerecv.close();
 	return 0;
 }
 

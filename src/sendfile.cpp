@@ -66,6 +66,7 @@ int main(int argc, char * argv[])
 
 	// push data to vector	
 	framet = new frame;
+	framet->data = 'c';
 	ackt = new ack;
 
 	std::vector<char> buffer;
@@ -73,7 +74,7 @@ int main(int argc, char * argv[])
 
 	while (!ends) {
 		ends = loadFileToBuffer(file, buffer, bufsize);
-		
+		sendto(client_fd, "c", sizeof(char), 0, (struct sockaddr *) &remote_addr, remaddrlen);
 	}
 
 	printBuffer(buffer);
@@ -143,6 +144,10 @@ void printBuffer(std::vector<char> buffer) {
 		std::cout << buffer[i];
 	}
 }
+
+// void sendFrame(std::vector<char> &buffer) {
+// 	sendto(client_fd, f1, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
+// }
 // nope
 	/*
 		int j = 0;
