@@ -11,13 +11,15 @@
 
 void setConnection(int dest_port);
 
+int recvWholeWindow(frame * framet, std::vector<char> buffer);
+
 struct sockaddr_in recv_addr;
 struct sockaddr_in remote_addr;
 socklen_t remaddrlen = sizeof(remote_addr);
 
 int server_fd;
 
-char * buffer;
+std::vector<char> buffer;
 
 frame * f1 = new frame;
 ack  * f2 = new ack;
@@ -52,8 +54,8 @@ int main(int argc, char *argv[])
 	buffer = new char[bufsize];
 	char * c;
 
-	recvlen = recvfrom(server_fd, c, sizeof(char), 0, (struct sockaddr *)&remote_addr, &remaddrlen);
-	printf("%c\n", c);
+	recvlen = recvfrom(server_fd, f1, sizeof(*f1), 0, (struct sockaddr *)&remote_addr, &remaddrlen);
+	printf("%c\n", f1->data);
 
 	// filerecv.close();
 	return 0;
@@ -81,4 +83,20 @@ void setConnection(int dest_port) {
 	}
 
 	printf("Socket connection success\n");
+}
+
+int recvWholeWindow(frame * framet, std::vector<char> buffer) {
+	int retval = 0;
+
+	char data;
+	for (int i = LFR+1; i < LFR+1 + winsize; ++i) {
+		if (i < bufsize)
+		{
+			data = framet->data;
+			buffer.push_back(data);
+		} else {
+			retval = 1;
+		}
+	}
+	return retval;
 }
