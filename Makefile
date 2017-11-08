@@ -1,3 +1,3 @@
 make :
-	g++ recvfileaya.cpp -o recvfileaya -std=c++11
-	g++ sendfileaya.cpp -o sendfileaya -std=c++11
+	# g++ recvfile.cpp -o recvfile -std=gnu++11 -pthread
+	g++ sendfile.cpp sendfile -o -std=c++11 -pthread

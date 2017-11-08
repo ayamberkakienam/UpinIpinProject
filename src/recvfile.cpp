@@ -10,8 +10,7 @@
 #include "frame.h"
 
 void setConnection(int dest_port);
-
-int recvWholeWindow(frame * framet, std::vector<char> buffer);
+int recvWholeWindow(frame * framet, std::vector<char> buffer) {
 
 struct sockaddr_in recv_addr;
 struct sockaddr_in remote_addr;

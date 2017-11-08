@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <thread>
+#include <mutex>
 #include <unistd.h>
 
 #include "frame.h"
@@ -18,7 +20,8 @@
 void setConnection(char * dest_ip, int dest_port);
 int loadFileToBuffer(std::ifstream& file, std::vector<char> &buffer, int bufsize);
 void printBuffer(std::vector<char> buffer);
-int sendWholeWindow(frame * framet, std::vector<char> &buffer);
+void sendWholeWindow();
+int recvACK();
 
 struct sockaddr_in send_addr;
 struct sockaddr_in remote_addr;
@@ -35,6 +38,13 @@ int dest_port;
 frame * framet;
 ack * ackt;
 int LAR = -1;
+
+std::vector<char> buffer;
+bool ends;
+bool buffempty;
+
+std::thread th1;
+std::thread th2;
 
 int main(int argc, char * argv[])
 {
@@ -65,18 +75,36 @@ int main(int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	// push data to vector	
 	framet = new frame;
 	ackt = new ack;
 
-	std::vector<char> buffer;
-	bool ends = false;
-
+	ends = false;
 	while (!ends) {
+		buffer.clear();
 		ends = loadFileToBuffer(file, buffer, bufsize);
 
-		sendWholeWindow(framet, buffer);
-		LAR += 4;
+		buffempty = false;
+		LAR = -1;
+
+
+		// th2 = std::thread(recvACK);
+		while (!buffempty) {
+			th1 = std::thread(sendWholeWindow);
+			// sendWholeWindow();
+			// sendWholeWindow(framet, buffer, buffempty);
+			// LAR += winsize; // <----- FOR TESTING PURPOSE
+
+			th1.join();
+			LAR += winsize;
+		}
+
+		// th2.join();
+		// th1.join();
+		// th2.join();
+	
+		printf("buffempty\n");
+
+
 	}
 
 	printBuffer(buffer);
@@ -149,8 +177,8 @@ void printBuffer(std::vector<char> buffer) {
 
 // Return 0 if window is full; 1 if not
 // Ngirim seluruh isi window dari (LAR+1) sampe (LAR+1)+window size
-int sendWholeWindow(frame * framet, std::vector<char> &buffer) {
-	int retval = 0;
+void sendWholeWindow() {
+	buffempty = 0;
 	for (int i = LAR+1; i < LAR+1 + winsize; ++i)
 	{
 		if (i < buffer.size())
@@ -159,9 +187,19 @@ int sendWholeWindow(frame * framet, std::vector<char> &buffer) {
 			printf("Sent frame data : %c\n", framet->data);
 			sendto(client_fd, framet, sizeof(frame), 0, (struct sockaddr *) &remote_addr, remaddrlen);
 		} else {
-			retval = 1;
+			buffempty = 1;
 		}
 	}
+	sleep(1);
+}
 
-	return retval;
+int recvACK() {
+	if (recvfrom(client_fd, ackt, sizeof(ack), 0, (struct sockaddr *) &remote_addr, &remaddrlen) >= 0) {
+		int ackseq = ackt->nextseqnum;
+		printf("get ACK : %d\n", ackseq);
+		if (ackseq-1 == LAR+1)
+		{
+			LAR++;
+		}
+	}
 }
